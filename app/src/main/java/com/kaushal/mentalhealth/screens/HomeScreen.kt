@@ -356,7 +356,18 @@ fun Tasks() {
                 )
             }
         }
+        val task = remember {
+            mutableStateOf(false)
+        }
         // Tasks
+        TaskCard(
+            dueDate = LocalDate.now(),
+            title = "Cooking",
+            description = "This is my show",
+            tags = listOf("Todo"),
+            isCompleted = task,
+            notification = task
+        )
     }
 }
 
