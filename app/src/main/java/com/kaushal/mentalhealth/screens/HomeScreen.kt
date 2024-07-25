@@ -2,6 +2,7 @@ package com.kaushal.mentalhealth.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -23,6 +25,7 @@ import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Card
@@ -69,6 +72,8 @@ fun HomeScreen() {
         Spacer(modifier = Modifier.height(10.dp))
         Calendar()
         TaskFilters()
+        Spacer(modifier = Modifier.height(20.dp))
+        Tasks()
     }
 }
 
@@ -148,15 +153,14 @@ fun Header() {
 @Composable
 fun Calendar() {
 
-    var selectedDate by remember {
+    val selectedDate by remember {
         mutableStateOf(LocalDate.now())
     }
     val dates = remember(selectedDate) {
         (-2..2).map { selectedDate.plusDays(it.toLong()) }
     }
 
-    Column(
-    ) {
+    Column {
         Row(
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -191,7 +195,7 @@ fun Calendar() {
         ) {
             dates.forEach { date ->
                 DateItems(
-                    date = date, isSelected = date == selectedDate, taskCompleted = 0.8f
+                    date = date, isSelected = date == selectedDate, taskCompleted = 1f
                 )
             }
         }
@@ -237,12 +241,13 @@ fun DateItems(
         }
     }
 }
+
 @Composable
 fun Filter(
     todo: MutableState<Boolean>,
     label: String,
     color: Int
-){
+) {
     FilterChip(
         onClick = { todo.value = !todo.value },
         label = {
@@ -251,11 +256,11 @@ fun Filter(
             )
         },
         colors = FilterChipDefaults.filterChipColors(
-            containerColor =  Color.Transparent,
+            containerColor = Color.Transparent,
             selectedContainerColor = colorResource(id = R.color.background_secondary)
         ),
         border = FilterChipDefaults.filterChipBorder(
-            borderColor = colorResource(id = R.color.dark_accent_2),
+            borderColor = colorResource(id = R.color.background_secondary),
             selected = todo.value,
             enabled = true
         ),
@@ -287,12 +292,65 @@ fun TaskFilters() {
         mutableStateOf(false)
     }
 
-    Row {
+    Row(
+        modifier = Modifier.horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
         Filter(todo = periodic, label = "Periodic", color = R.color.rank_asc)
         Filter(todo = todo, label = "To-do", color = R.color.purple_200)
         Filter(todo = focusMode, label = "Focus Mode", color = R.color.teal_200)
     }
 
+}
+
+@Composable
+fun Tasks() {
+    Column {
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Tasks", style = MaterialTheme.typography.titleLarge, color = colorResource(
+                    id = R.color.text
+                )
+            )
+            Spacer(modifier = Modifier.width(10.dp))
+            IconButton(
+                onClick = { /*TODO*/ }, modifier = Modifier
+                    .background(
+                        color = colorResource(id = R.color.background_secondary),
+                        shape = CircleShape
+                    )
+                    .height(35.dp)
+                    .width(35.dp)
+            ) {
+                Icon(
+                    Icons.Outlined.Add, contentDescription = "Search", tint = colorResource(
+                        id = R.color.text
+                    )
+                )
+            }
+        }
+        Spacer(modifier = Modifier.height(5.dp))
+        Row (
+            verticalAlignment = Alignment.CenterVertically
+        ){
+            Text(
+                text = "High priority",
+                style = MaterialTheme.typography.labelMedium,
+                color = colorResource(
+                    id = R.color.hard_label
+                )
+            )
+            IconButton(onClick = { /*TODO*/ }, modifier = Modifier
+                .width(20.dp)
+                .height(20.dp)) {
+                Icon(Icons.Default.ArrowDropDown, contentDescription = "DropDown", tint = colorResource(
+                    id = R.color.text
+                ))
+            }
+        }
+    }
 }
 
 @Preview

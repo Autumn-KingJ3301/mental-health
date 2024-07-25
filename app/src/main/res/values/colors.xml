@@ -14,4 +14,5 @@
     <color name="rank_asc">#6DE972</color>
     <color name="accent">#133641</color>
     <color name="dark_accent_2">#2B2D5B</color>
+    <color name="hard_label">#FF6868</color>
 </resources>
