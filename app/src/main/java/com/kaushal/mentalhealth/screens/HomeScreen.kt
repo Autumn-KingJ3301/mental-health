@@ -46,6 +46,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.kaushal.mentalhealth.R
+import com.kaushal.mentalhealth.model.TaskModel
 import java.time.LocalDate
 import java.time.format.TextStyle
 import java.util.Locale
@@ -360,25 +361,14 @@ fun Tasks() {
             mutableStateOf(false)
         }
         // Tasks
-        TaskCard(
-            dueDate = LocalDate.now(),
-            title = "Cooking",
-            description = "This is my show",
-            tags = listOf("Todo"),
-            isCompleted = task,
-            notification = task
-        )
+
     }
 }
 
+
 @Composable
 fun TaskCard(
-    dueDate: LocalDate,
-    title: String,
-    description: String,
-    tags: List<String>,
-    isCompleted: MutableState<Boolean>,
-    notification: MutableState<Boolean>
+    task: TaskModel
 ) {
 
 }
