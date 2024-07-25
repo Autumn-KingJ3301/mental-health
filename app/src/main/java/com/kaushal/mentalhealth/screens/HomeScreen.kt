@@ -34,6 +34,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -236,49 +237,60 @@ fun DateItems(
         }
     }
 }
+@Composable
+fun Filter(
+    todo: MutableState<Boolean>,
+    label: String,
+    color: Int
+){
+    FilterChip(
+        onClick = { todo.value = !todo.value },
+        label = {
+            Text(
+                label, color = colorResource(id = R.color.text)
+            )
+        },
+        colors = FilterChipDefaults.filterChipColors(
+            containerColor =  Color.Transparent,
+            selectedContainerColor = colorResource(id = R.color.background_secondary)
+        ),
+        border = FilterChipDefaults.filterChipBorder(
+            borderColor = colorResource(id = R.color.dark_accent_2),
+            selected = todo.value,
+            enabled = true
+        ),
+        selected = todo.value,
+        leadingIcon = if (todo.value) {
+            {
+                Icon(
+                    imageVector = Icons.Default.Check,
+                    contentDescription = "Done icon",
+                    modifier = Modifier.size(FilterChipDefaults.IconSize),
+                    tint = colorResource(id = color)
+                )
+            }
+        } else {
+            null
+        },
+    )
+}
 
 @Composable
 fun TaskFilters() {
-    var todo by remember {
+    val todo = remember {
         mutableStateOf(false)
     }
-    var focusMode by remember {
+    val focusMode = remember {
         mutableStateOf(false)
     }
-    var periodic by remember {
+    val periodic = remember {
         mutableStateOf(false)
     }
 
     Row {
-        FilterChip(
-            onClick = { todo = !todo },
-            label = {
-                Text(
-                    "To-do", color = colorResource(id = R.color.text)
-                )
-            },
-            colors = FilterChipDefaults.filterChipColors(
-                containerColor =  Color.Transparent,
-                selectedContainerColor = colorResource(id = R.color.background_secondary)
-                ),
-            border = FilterChipDefaults.filterChipBorder(
-                borderColor = colorResource(id = R.color.dark_accent_2),
-                selected = todo,
-                enabled = true
-            ),
-            selected = todo,
-            leadingIcon = if (todo) {
-                {
-                    Icon(
-                        imageVector = Icons.Default.Check,
-                        contentDescription = "Done icon",
-                        modifier = Modifier.size(FilterChipDefaults.IconSize),
-                    )
-                }
-            } else {
-                null
-            },
-        )
+        Filter(todo = periodic, label = "Periodic", color = R.color.rank_asc)
+        Filter(todo = todo, label = "To-do", color = R.color.purple_200)
+        Filter(todo = focusMode, label = "Focus Mode", color = R.color.teal_200)
     }
 
 }
