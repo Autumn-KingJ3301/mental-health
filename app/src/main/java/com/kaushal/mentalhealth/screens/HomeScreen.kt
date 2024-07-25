@@ -65,7 +65,7 @@ fun HomeScreen() {
         Spacer(modifier = Modifier.height(10.dp))
         Calendar()
         TaskFilters()
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(5.dp))
         Tasks()
     }
 }
@@ -261,14 +261,21 @@ fun Filter(
         leadingIcon = if (todo.value) {
             {
                 Icon(
-                    imageVector = Icons.Default.Check,
+                    painter = painterResource(id = R.drawable.radiobuttonchecked),
                     contentDescription = "Done icon",
                     modifier = Modifier.size(FilterChipDefaults.IconSize),
                     tint = colorResource(id = color)
                 )
             }
         } else {
-            null
+            {
+                Icon(
+                    painter = painterResource(id = R.drawable.radiobuttonunchecked),
+                    contentDescription = "Done icon",
+                    modifier = Modifier.size(FilterChipDefaults.IconSize),
+                    tint = colorResource(id = color)
+                )
+            }
         },
     )
 }
@@ -325,9 +332,9 @@ fun Tasks() {
             }
         }
         Spacer(modifier = Modifier.height(5.dp))
-        Row (
+        Row(
             verticalAlignment = Alignment.CenterVertically
-        ){
+        ) {
             Text(
                 text = "High priority",
                 style = MaterialTheme.typography.labelMedium,
@@ -335,17 +342,24 @@ fun Tasks() {
                     id = R.color.hard_label
                 )
             )
-            IconButton(onClick = { /*TODO*/ }, modifier = Modifier
-                .width(20.dp)
-                .height(20.dp)) {
-                Icon(Icons.Default.ArrowDropDown, contentDescription = "DropDown", tint = colorResource(
-                    id = R.color.text
-                ))
+            IconButton(
+                onClick = { /*TODO*/ }, modifier = Modifier
+                    .width(20.dp)
+                    .height(20.dp)
+            ) {
+                Icon(
+                    Icons.Default.ArrowDropDown,
+                    contentDescription = "DropDown",
+                    tint = colorResource(
+                        id = R.color.text
+                    )
+                )
             }
         }
         // Tasks
     }
 }
+
 @Composable
 fun TaskCard(
     dueDate: LocalDate,
@@ -354,7 +368,7 @@ fun TaskCard(
     tags: List<String>,
     isCompleted: MutableState<Boolean>,
     notification: MutableState<Boolean>
-){
+) {
 
 }
 
