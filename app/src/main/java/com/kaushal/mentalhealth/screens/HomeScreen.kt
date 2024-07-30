@@ -46,11 +46,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.kaushal.mentalhealth.R
+import com.kaushal.mentalhealth.model.TaskManager
 import com.kaushal.mentalhealth.model.TaskModel
 import java.time.LocalDate
 import java.time.format.TextStyle
 import java.util.Locale
 
+val manager = TaskManager()
 
 @Composable
 fun HomeScreen() {
@@ -317,7 +319,11 @@ fun Tasks() {
             )
             Spacer(modifier = Modifier.width(10.dp))
             IconButton(
-                onClick = { /*TODO*/ }, modifier = Modifier
+                onClick = { manager.addTask(task = TaskModel(
+                    title = "Cooking",
+                    description = "Hey I want to cook",
+                    color = Color.Red,
+                )) }, modifier = Modifier
                     .background(
                         color = colorResource(id = R.color.background_secondary),
                         shape = CircleShape
@@ -357,11 +363,16 @@ fun Tasks() {
                 )
             }
         }
-        val task = remember {
-            mutableStateOf(false)
-        }
         // Tasks
+        TaskCard(task = TaskModel(
+            title = "Cooking",
+            description = "Hey I want to cook",
+            color = Color.Red,
+        ))
 
+
+        val tasks = manager.getTasks()
+        tasks.forEach{task -> TaskCard(task = task)}
     }
 }
 
@@ -370,7 +381,7 @@ fun Tasks() {
 fun TaskCard(
     task: TaskModel
 ) {
-
+    Text(text = task.id, color = Color.White)
 }
 
 @Preview

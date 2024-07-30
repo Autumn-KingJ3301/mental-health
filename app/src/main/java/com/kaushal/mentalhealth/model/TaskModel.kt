@@ -11,10 +11,14 @@ data class TaskModel(
     val description: String = "",
     val color: Color,
     val tags: Set<String> = emptySet(),
+    val priority: Priority = Priority.High,
     val schedule: Schedule = Schedule.Once,
     var status: Boolean = false,
     var isNotificationEnabled: Boolean = true
 ){
+    enum class Priority{
+        High, Medium, Low
+    }
     sealed class Schedule{
         data object Once: Schedule()
         data class Daily(val time: LocalDateTime): Schedule()
