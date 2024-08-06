@@ -1,6 +1,7 @@
 package com.kaushal.mentalhealth.screens
 
 import android.app.Notification
+import android.widget.Space
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
@@ -319,11 +320,16 @@ fun Tasks() {
             )
             Spacer(modifier = Modifier.width(10.dp))
             IconButton(
-                onClick = { manager.addTask(task = TaskModel(
-                    title = "Cooking",
-                    description = "Hey I want to cook",
-                    color = Color.Red,
-                )) }, modifier = Modifier
+                onClick = {
+                    manager.addTask(
+                        task = TaskModel(
+                            title = "Cooking",
+                            description = "Hey I want to cook",
+                            color = Color.Cyan,
+                            tags = setOf("Periodic")
+                        )
+                    )
+                }, modifier = Modifier
                     .background(
                         color = colorResource(id = R.color.background_secondary),
                         shape = CircleShape
@@ -364,24 +370,69 @@ fun Tasks() {
             }
         }
         // Tasks
-        TaskCard(task = TaskModel(
-            title = "Cooking",
-            description = "Hey I want to cook",
-            color = Color.Red,
-        ))
+        TaskCard(
+            task = TaskModel(
+                title = "Cooking",
+                description = "Hey I want to cook",
+                color = Color.Cyan,
+            )
+        )
 
 
         val tasks = manager.getTasks()
-        tasks.forEach{task -> TaskCard(task = task)}
+        tasks.forEach { task -> TaskCard(task = task) }
     }
 }
 
+@Composable
+fun Tag(tag: String) {
+    Box(
+        modifier = Modifier
+            .background(color = Color.White, shape = RoundedCornerShape(8.dp))
+            .padding(10.dp, 5.dp)
+    ) {
+        Text(text = tag)
+    }
+    Spacer(modifier = Modifier.width(5.dp))
+}
 
 @Composable
 fun TaskCard(
     task: TaskModel
 ) {
-    Text(text = task.id, color = Color.White)
+    Spacer(modifier = Modifier.height(15.dp))
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(100.dp)
+            .background(color = task.color, shape = RoundedCornerShape(14.dp))
+            .padding(10.dp)
+
+    ) {
+        Column {
+            Text(text = task.schedule.toString(), style = MaterialTheme.typography.labelSmall)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(text = task.title, style = MaterialTheme.typography.titleLarge)
+                Row {
+                    task.tags.forEach { tag -> Tag(tag) }
+                }
+
+            }
+
+
+            val desc = if (task.description.length > 50)
+                task.description.substring(0, 50) + "..."
+            else task.description
+
+            Text(text = desc, style = MaterialTheme.typography.bodySmall)
+        }
+
+    }
 }
 
 @Preview
