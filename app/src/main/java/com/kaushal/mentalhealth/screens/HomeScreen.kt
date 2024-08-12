@@ -1,7 +1,7 @@
 package com.kaushal.mentalhealth.screens
 
-import android.app.Notification
-import android.widget.Space
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
@@ -17,15 +17,20 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxColors
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
@@ -33,10 +38,13 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -70,7 +78,10 @@ fun HomeScreen() {
         Calendar()
         TaskFilters()
         Spacer(modifier = Modifier.height(5.dp))
+
         Tasks()
+
+
     }
 }
 
@@ -309,6 +320,9 @@ fun TaskFilters() {
 
 @Composable
 fun Tasks() {
+
+    val tasks by manager.tasks.collectAsState()
+
     Column {
         Row(
             verticalAlignment = Alignment.CenterVertically
@@ -369,18 +383,25 @@ fun Tasks() {
                 )
             }
         }
-        // Tasks
-        TaskCard(
-            task = TaskModel(
-                title = "Cooking",
-                description = "Hey I want to cook",
-                color = Color.Cyan,
-            )
-        )
+        Spacer(modifier = Modifier.height(5.dp))
+        //Tasks
+        LazyColumn {
+            items(tasks, key = { it.id }) { task ->
+                TaskCard(
+                    task = task,
+                    onStatusChange = { newStatus ->
+                        val updatedTask = task.copy(status = newStatus)
+                        manager.updateTask(updatedTask)
+                    },
+                    onNotificationChange = {
+                        newNotification->
+                        val updatedTask = task.copy(isNotificationEnabled = newNotification)
+                        manager.updateTask(updatedTask)
+                    }
+                )
+            }
+        }
 
-
-        val tasks = manager.getTasks()
-        tasks.forEach { task -> TaskCard(task = task) }
     }
 }
 
@@ -398,8 +419,18 @@ fun Tag(tag: String) {
 
 @Composable
 fun TaskCard(
-    task: TaskModel
+    task: TaskModel,
+    onStatusChange: (Boolean) -> Unit,
+    onNotificationChange: (Boolean) -> Unit
 ) {
+
+    var notifications by remember {
+        mutableStateOf(false)
+    }
+    LaunchedEffect(notifications) {
+        onNotificationChange(notifications)
+    }
+
     Spacer(modifier = Modifier.height(15.dp))
     Box(
         modifier = Modifier
@@ -430,6 +461,44 @@ fun TaskCard(
             else task.description
 
             Text(text = desc, style = MaterialTheme.typography.bodySmall)
+            Row(
+                horizontalArrangement = Arrangement.End,
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+                Checkbox(
+                    checked = task.status,
+                    onCheckedChange = { onStatusChange(it) },
+                    colors = CheckboxColors(
+                        checkedCheckmarkColor = task.color,
+                        checkedBoxColor = colorResource(id = R.color.accent),
+                        uncheckedBorderColor = colorResource(id = R.color.accent),
+                        uncheckedBoxColor = Color.Transparent,
+                        checkedBorderColor = colorResource(id = R.color.accent),
+                        uncheckedCheckmarkColor = colorResource(id = R.color.accent),
+                        disabledBorderColor = Color.Transparent,
+                        disabledIndeterminateBorderColor = Color.Transparent,
+                        disabledCheckedBoxColor = Color.Transparent,
+                        disabledUncheckedBoxColor = Color.Transparent,
+                        disabledUncheckedBorderColor = Color.Transparent,
+                        disabledIndeterminateBoxColor = Color.Transparent
+                    )
+                )
+                IconButton(
+                    onClick = { notifications = !notifications }, modifier = Modifier
+                        .height(40.dp)
+                        .width(40.dp)
+                ) {
+                    Icon(
+                        if (task.isNotificationEnabled) Icons.Default.Notifications else Icons.Outlined.Notifications,
+                        contentDescription = "notification",
+                        tint = colorResource(
+                            id = R.color.accent
+                        ),
+                    )
+                }
+
+            }
         }
 
     }
