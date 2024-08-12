@@ -31,11 +31,13 @@ import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxColors
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -63,8 +65,14 @@ import java.util.Locale
 
 val manager = TaskManager()
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen() {
+
+    val sheetState = remember {
+        mutableStateOf(false)
+    }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -79,9 +87,14 @@ fun HomeScreen() {
         TaskFilters()
         Spacer(modifier = Modifier.height(5.dp))
 
-        Tasks()
+        Tasks(addTaskState = sheetState)
+        if(sheetState.value){
+            ModalBottomSheet(onDismissRequest = { sheetState.value = false }, containerColor = colorResource(
+                id = R.color.background_secondary
+            )) {
 
-
+            }
+        }
     }
 }
 
@@ -319,7 +332,7 @@ fun TaskFilters() {
 }
 
 @Composable
-fun Tasks() {
+fun Tasks(addTaskState: MutableState<Boolean>) {
 
     val tasks by manager.tasks.collectAsState()
 
@@ -327,6 +340,7 @@ fun Tasks() {
         Row(
             verticalAlignment = Alignment.CenterVertically
         ) {
+
             Text(
                 text = "Tasks", style = MaterialTheme.typography.titleLarge, color = colorResource(
                     id = R.color.text
@@ -335,14 +349,7 @@ fun Tasks() {
             Spacer(modifier = Modifier.width(10.dp))
             IconButton(
                 onClick = {
-                    manager.addTask(
-                        task = TaskModel(
-                            title = "Cooking",
-                            description = "Hey I want to cook",
-                            color = Color.Cyan,
-                            tags = setOf("Periodic")
-                        )
-                    )
+                    addTaskState.value = true
                 }, modifier = Modifier
                     .background(
                         color = colorResource(id = R.color.background_secondary),
@@ -352,11 +359,14 @@ fun Tasks() {
                     .width(35.dp)
             ) {
                 Icon(
-                    Icons.Outlined.Add, contentDescription = "Search", tint = colorResource(
+                    Icons.Outlined.Add, contentDescription = "Search",
+                    tint = colorResource(
                         id = R.color.text
+                    ),
+
                     )
-                )
             }
+
         }
         Spacer(modifier = Modifier.height(5.dp))
         Row(
@@ -393,8 +403,7 @@ fun Tasks() {
                         val updatedTask = task.copy(status = newStatus)
                         manager.updateTask(updatedTask)
                     },
-                    onNotificationChange = {
-                        newNotification->
+                    onNotificationChange = { newNotification ->
                         val updatedTask = task.copy(isNotificationEnabled = newNotification)
                         manager.updateTask(updatedTask)
                     }
@@ -495,6 +504,9 @@ fun TaskCard(
                         tint = colorResource(
                             id = R.color.accent
                         ),
+                        modifier = Modifier
+                            .width(40.dp)
+                            .height(40.dp)
                     )
                 }
 
