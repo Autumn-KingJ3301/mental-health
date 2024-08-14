@@ -4,10 +4,13 @@ import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -20,8 +23,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Notifications
@@ -38,7 +44,14 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldColors
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -65,13 +78,19 @@ import java.util.Locale
 
 val manager = TaskManager()
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun HomeScreen() {
 
     val sheetState = remember {
         mutableStateOf(false)
     }
+    val priorityOptions = listOf("High", "Medium", "Low")
+    val tagOptions = setOf("Todo", "Periodic", "Focus mode")
+
+    var selectedPriority by remember { mutableStateOf(priorityOptions[1]) }
+    var title by remember { mutableStateOf("") }
+    var selectedTags by remember { mutableStateOf(setOf<String>()) }
 
     Column(
         modifier = Modifier
@@ -88,10 +107,142 @@ fun HomeScreen() {
         Spacer(modifier = Modifier.height(5.dp))
 
         Tasks(addTaskState = sheetState)
-        if(sheetState.value){
-            ModalBottomSheet(onDismissRequest = { sheetState.value = false }, containerColor = colorResource(
-                id = R.color.background_secondary
-            )) {
+        if (sheetState.value) {
+            ModalBottomSheet(
+                onDismissRequest = { sheetState.value = false },
+                containerColor = colorResource(
+                    id = R.color.background_secondary,
+                ),
+
+                ) {
+                Column(
+                    modifier = Modifier
+                        .padding(20.dp, 10.dp)
+                        .verticalScroll(rememberScrollState())
+                ) {
+
+                    Text(
+                        text = "Add Task",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = colorResource(
+                            id = R.color.text
+                        )
+                    )
+
+                    Spacer(modifier = Modifier.height(20.dp))
+                    TextField(
+                        value = title,
+                        onValueChange = { title = it },
+                        label = { Text("Title") },
+                        textStyle = androidx.compose.ui.text.TextStyle(
+                            color = colorResource(id = R.color.text)
+                        ),
+                        maxLines = 1,
+                        shape = RoundedCornerShape(10.dp),
+                        colors = TextFieldDefaults.colors(
+                            unfocusedContainerColor = colorResource(id = R.color.input),
+                            unfocusedIndicatorColor = Color.Transparent,
+                            focusedIndicatorColor = Color.Transparent,
+                            focusedContainerColor = colorResource(id = R.color.input),
+                            unfocusedLabelColor = colorResource(id = R.color.text),
+                            focusedTextColor = colorResource(id = R.color.text),
+                            focusedLabelColor = colorResource(id = R.color.text_accent)
+                        )
+
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+                    TextField(
+                        value = title,
+                        onValueChange = { title = it },
+                        label = { Text("Description") },
+                        textStyle = androidx.compose.ui.text.TextStyle(
+                            color = colorResource(id = R.color.text)
+                        ),
+                        maxLines = 5,
+                        minLines = 5,
+                        shape = RoundedCornerShape(10.dp),
+                        colors = TextFieldDefaults.colors(
+                            unfocusedContainerColor = colorResource(id = R.color.input),
+                            unfocusedIndicatorColor = Color.Transparent,
+                            focusedIndicatorColor = Color.Transparent,
+                            focusedContainerColor = colorResource(id = R.color.input),
+                            unfocusedLabelColor = colorResource(id = R.color.text),
+                            focusedTextColor = colorResource(id = R.color.text),
+                            focusedLabelColor = colorResource(id = R.color.text_accent)
+                        )
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Column(
+                        modifier = Modifier
+                            .selectableGroup()
+                    ) {
+                        Text(
+                            text = "Priority",
+                            color = colorResource(id = R.color.text),
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        priorityOptions.forEach { option ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .selectable(
+                                        selected = (option == selectedPriority),
+                                        onClick = { selectedPriority = option }
+                                    ),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                RadioButton(
+                                    selected = (option == selectedPriority),
+                                    onClick = { selectedPriority = option },
+                                    colors = RadioButtonDefaults.colors(
+                                        selectedColor = colorResource(id = R.color.text_accent)
+                                    )
+                                )
+                                Text(
+                                    text = option,
+                                    modifier = Modifier.padding(start = 5.dp),
+                                    style = MaterialTheme.typography.labelLarge,
+                                    color = colorResource(
+                                        id = R.color.text
+                                    )
+                                )
+                            }
+                        }
+                    }
+                    Text(
+                        text = "Tags",
+                        color = colorResource(id = R.color.text),
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    FlowRow(
+                        modifier = Modifier.horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        tagOptions.forEach { tag ->
+                            FilterChip(
+                                selected = tag in selectedTags,
+                                onClick = {
+                                    selectedTags =
+                                        if (tag in selectedTags) {
+                                            selectedTags - tag
+                                        } else {
+                                            selectedTags + tag
+                                        }
+                                },
+                                label = { Text(text = tag) },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    labelColor = colorResource(id = R.color.text_accent),
+                                    selectedContainerColor = colorResource(id = R.color.text_accent)
+                                ),
+                                border = FilterChipDefaults.filterChipBorder(
+                                    borderColor = colorResource(id = R.color.dark_accent_2),
+                                    selected = tag in selectedTags,
+                                    enabled = true
+                                ),
+                            )
+                        }
+                    }
+                }
 
             }
         }
@@ -265,9 +416,7 @@ fun DateItems(
 
 @Composable
 fun Filter(
-    todo: MutableState<Boolean>,
-    label: String,
-    color: Int
+    todo: MutableState<Boolean>, label: String, color: Int
 ) {
     FilterChip(
         onClick = { todo.value = !todo.value },
@@ -308,6 +457,7 @@ fun Filter(
     )
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun TaskFilters() {
     val todo = remember {
@@ -320,8 +470,7 @@ fun TaskFilters() {
         mutableStateOf(false)
     }
 
-    Row(
-        modifier = Modifier.horizontalScroll(rememberScrollState()),
+    FlowRow(
         horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         Filter(todo = periodic, label = "Periodic", color = R.color.rank_asc)
@@ -397,17 +546,13 @@ fun Tasks(addTaskState: MutableState<Boolean>) {
         //Tasks
         LazyColumn {
             items(tasks, key = { it.id }) { task ->
-                TaskCard(
-                    task = task,
-                    onStatusChange = { newStatus ->
-                        val updatedTask = task.copy(status = newStatus)
-                        manager.updateTask(updatedTask)
-                    },
-                    onNotificationChange = { newNotification ->
-                        val updatedTask = task.copy(isNotificationEnabled = newNotification)
-                        manager.updateTask(updatedTask)
-                    }
-                )
+                TaskCard(task = task, onStatusChange = { newStatus ->
+                    val updatedTask = task.copy(status = newStatus)
+                    manager.updateTask(updatedTask)
+                }, onNotificationChange = { newNotification ->
+                    val updatedTask = task.copy(isNotificationEnabled = newNotification)
+                    manager.updateTask(updatedTask)
+                })
             }
         }
 
@@ -428,9 +573,7 @@ fun Tag(tag: String) {
 
 @Composable
 fun TaskCard(
-    task: TaskModel,
-    onStatusChange: (Boolean) -> Unit,
-    onNotificationChange: (Boolean) -> Unit
+    task: TaskModel, onStatusChange: (Boolean) -> Unit, onNotificationChange: (Boolean) -> Unit
 ) {
 
     var notifications by remember {
@@ -452,8 +595,7 @@ fun TaskCard(
         Column {
             Text(text = task.schedule.toString(), style = MaterialTheme.typography.labelSmall)
             Row(
-                modifier = Modifier
-                    .fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
@@ -465,15 +607,12 @@ fun TaskCard(
             }
 
 
-            val desc = if (task.description.length > 50)
-                task.description.substring(0, 50) + "..."
+            val desc = if (task.description.length > 50) task.description.substring(0, 50) + "..."
             else task.description
 
             Text(text = desc, style = MaterialTheme.typography.bodySmall)
             Row(
-                horizontalArrangement = Arrangement.End,
-                modifier = Modifier
-                    .fillMaxWidth()
+                horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()
             ) {
                 Checkbox(
                     checked = task.status,
@@ -494,7 +633,8 @@ fun TaskCard(
                     )
                 )
                 IconButton(
-                    onClick = { notifications = !notifications }, modifier = Modifier
+                    onClick = { notifications = !notifications },
+                    modifier = Modifier
                         .height(40.dp)
                         .width(40.dp)
                 ) {

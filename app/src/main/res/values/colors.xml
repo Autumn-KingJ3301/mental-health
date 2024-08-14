@@ -8,6 +8,7 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="background">#06030E</color>
+    <color name="input">#090B19</color>
     <color name="background_secondary">#0E0F22</color>
     <color name="text">#FFFFFF</color>
     <color name="text_accent">#9780E5</color>
