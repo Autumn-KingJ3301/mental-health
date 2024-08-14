@@ -242,6 +242,12 @@ fun HomeScreen() {
                             )
                         }
                     }
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Text(
+                        text = "Schedule",
+                        color = colorResource(id = R.color.text),
+                        style = MaterialTheme.typography.titleMedium
+                    )
                 }
 
             }
