@@ -52,6 +52,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TimeInput
+import androidx.compose.material3.TimePickerDefaults
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -74,6 +77,7 @@ import com.kaushal.mentalhealth.model.TaskManager
 import com.kaushal.mentalhealth.model.TaskModel
 import java.time.LocalDate
 import java.time.format.TextStyle
+import java.util.Calendar
 import java.util.Locale
 
 val manager = TaskManager()
@@ -86,11 +90,29 @@ fun HomeScreen() {
         mutableStateOf(false)
     }
     val priorityOptions = listOf("High", "Medium", "Low")
+    val colors = mapOf(
+        "High" to colorResource(id = R.color.hard_label),
+        "Medium" to colorResource(id = R.color.medium_label),
+        "Low" to colorResource(id = R.color.rank_asc)
+    )
+    val tagColors = mapOf(
+        "Periodic" to colorResource(id = R.color.rank_asc),
+        "Todo" to colorResource(id = R.color.text_accent),
+        "Focus mode" to colorResource(id = R.color.teal_200)
+    )
     val tagOptions = setOf("Todo", "Periodic", "Focus mode")
+    val scheduleOptions = listOf("Once", "Daily", "Monthly", "Custom")
 
+    var selectedSchedule by remember { mutableStateOf(scheduleOptions[0]) }
     var selectedPriority by remember { mutableStateOf(priorityOptions[1]) }
     var title by remember { mutableStateOf("") }
     var selectedTags by remember { mutableStateOf(setOf<String>()) }
+    val calendar = Calendar.getInstance()
+    val timePickerState = rememberTimePickerState(
+        initialHour = calendar.get(Calendar.HOUR),
+        initialMinute = calendar.get(Calendar.MINUTE),
+        is24Hour = false
+    )
 
     Column(
         modifier = Modifier
@@ -175,36 +197,53 @@ fun HomeScreen() {
                     Column(
                         modifier = Modifier
                             .selectableGroup()
+                            .fillMaxWidth()
                     ) {
                         Text(
                             text = "Priority",
                             color = colorResource(id = R.color.text),
                             style = MaterialTheme.typography.titleMedium
                         )
-                        priorityOptions.forEach { option ->
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .selectable(
-                                        selected = (option == selectedPriority),
-                                        onClick = { selectedPriority = option }
-                                    ),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                RadioButton(
-                                    selected = (option == selectedPriority),
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            priorityOptions.forEach { option ->
+                                FilterChip(
                                     onClick = { selectedPriority = option },
-                                    colors = RadioButtonDefaults.colors(
-                                        selectedColor = colorResource(id = R.color.text_accent)
-                                    )
-                                )
-                                Text(
-                                    text = option,
-                                    modifier = Modifier.padding(start = 5.dp),
-                                    style = MaterialTheme.typography.labelLarge,
-                                    color = colorResource(
-                                        id = R.color.text
-                                    )
+                                    label = {
+                                        Text(
+                                            option, color = colorResource(id = R.color.text)
+                                        )
+                                    },
+                                    colors = FilterChipDefaults.filterChipColors(
+                                        containerColor = Color.Transparent,
+                                        selectedContainerColor = colorResource(id = R.color.input)
+                                    ),
+                                    border = FilterChipDefaults.filterChipBorder(
+                                        borderColor = colorResource(id = R.color.dark_accent_2),
+                                        selected = (option == selectedPriority),
+                                        enabled = true
+                                    ),
+                                    selected = (option == selectedPriority),
+                                    leadingIcon = if ((option == selectedPriority)) {
+                                        {
+                                            Icon(
+                                                painter = painterResource(id = R.drawable.radiobuttonchecked),
+                                                contentDescription = "Done icon",
+                                                modifier = Modifier.size(FilterChipDefaults.IconSize),
+                                                tint = colors.getValue(option)
+                                            )
+                                        }
+                                    } else {
+                                        {
+                                            Icon(
+                                                painter = painterResource(id = R.drawable.radiobuttonunchecked),
+                                                contentDescription = "Done icon",
+                                                modifier = Modifier.size(FilterChipDefaults.IconSize),
+                                                tint = colors.getValue(option)
+                                            )
+                                        }
+                                    },
                                 )
                             }
                         }
@@ -220,7 +259,6 @@ fun HomeScreen() {
                     ) {
                         tagOptions.forEach { tag ->
                             FilterChip(
-                                selected = tag in selectedTags,
                                 onClick = {
                                     selectedTags =
                                         if (tag in selectedTags) {
@@ -229,16 +267,40 @@ fun HomeScreen() {
                                             selectedTags + tag
                                         }
                                 },
-                                label = { Text(text = tag) },
+                                label = {
+                                    Text(
+                                        tag, color = colorResource(id = R.color.text)
+                                    )
+                                },
                                 colors = FilterChipDefaults.filterChipColors(
-                                    labelColor = colorResource(id = R.color.text_accent),
-                                    selectedContainerColor = colorResource(id = R.color.text_accent)
+                                    containerColor = Color.Transparent,
+                                    selectedContainerColor = colorResource(id = R.color.input)
                                 ),
                                 border = FilterChipDefaults.filterChipBorder(
                                     borderColor = colorResource(id = R.color.dark_accent_2),
                                     selected = tag in selectedTags,
                                     enabled = true
                                 ),
+                                selected = tag in selectedTags,
+                                leadingIcon = if (tag in selectedTags) {
+                                    {
+                                        Icon(
+                                            painter = painterResource(id = R.drawable.radiobuttonchecked),
+                                            contentDescription = "Done icon",
+                                            modifier = Modifier.size(FilterChipDefaults.IconSize),
+                                            tint = tagColors.getValue(tag)
+                                        )
+                                    }
+                                } else {
+                                    {
+                                        Icon(
+                                            painter = painterResource(id = R.drawable.radiobuttonunchecked),
+                                            contentDescription = "Done icon",
+                                            modifier = Modifier.size(FilterChipDefaults.IconSize),
+                                            tint = tagColors.getValue(tag)
+                                        )
+                                    }
+                                },
                             )
                         }
                     }
@@ -248,6 +310,67 @@ fun HomeScreen() {
                         color = colorResource(id = R.color.text),
                         style = MaterialTheme.typography.titleMedium
                     )
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        scheduleOptions.forEach { option ->
+                            FilterChip(
+                                onClick = { selectedSchedule = option },
+                                label = {
+                                    Text(
+                                        option, color = colorResource(id = R.color.text)
+                                    )
+                                },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    containerColor = Color.Transparent,
+                                    selectedContainerColor = colorResource(id = R.color.input)
+                                ),
+                                border = FilterChipDefaults.filterChipBorder(
+                                    borderColor = colorResource(id = R.color.dark_accent_2),
+                                    selected = (option == selectedSchedule),
+                                    enabled = true
+                                ),
+                                selected = (option == selectedSchedule),
+                                leadingIcon = if ((option == selectedSchedule)) {
+                                    {
+                                        Icon(
+                                            painter = painterResource(id = R.drawable.radiobuttonchecked),
+                                            contentDescription = "Done icon",
+                                            modifier = Modifier.size(FilterChipDefaults.IconSize),
+                                            tint = colorResource(id = R.color.text_accent)
+                                        )
+                                    }
+                                } else {
+                                    {
+                                        Icon(
+                                            painter = painterResource(id = R.drawable.radiobuttonunchecked),
+                                            contentDescription = "Done icon",
+                                            modifier = Modifier.size(FilterChipDefaults.IconSize),
+                                            tint = colorResource(id = R.color.text_accent)
+                                        )
+                                    }
+                                },
+                            )
+                        }
+                    }
+                    if (selectedSchedule == "Daily") {
+                        TimeInput(
+                            state = timePickerState,
+                            colors = TimePickerDefaults.colors(
+                                containerColor = colorResource(id = R.color.input),
+                                periodSelectorBorderColor = colorResource(id = R.color.dark_accent_2),
+                                periodSelectorSelectedContainerColor = colorResource(id = R.color.dark_accent_2),
+                                periodSelectorSelectedContentColor = colorResource(id = R.color.text_accent),
+                                periodSelectorUnselectedContentColor = colorResource(id = R.color.dark_accent_2),
+                                selectorColor = colorResource(id = R.color.dark_accent_2),
+                                timeSelectorSelectedContainerColor = colorResource(id = R.color.input),
+                                timeSelectorSelectedContentColor = colorResource(id = R.color.text_accent),
+                                timeSelectorUnselectedContainerColor = colorResource(id = R.color.input),
+                                timeSelectorUnselectedContentColor = colorResource(id = R.color.text_accent)
+                            ),
+                        )
+
+                    }
                 }
 
             }
