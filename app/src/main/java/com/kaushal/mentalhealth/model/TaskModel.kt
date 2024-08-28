@@ -26,7 +26,7 @@ data class TaskModel(
         data object Once : Schedule()
 
         data class Daily(val time: LocalDateTime) : Schedule()
-        data class Weekly(val daysOfWeek: Set<DayOfWeek>, val time: LocalDateTime) : Schedule()
+        data class Custom(val daysOfWeek: Set<DayOfWeek>, val time: LocalDateTime) : Schedule()
         data class Monthly(val dayOfMonth: Int, val time: LocalDateTime) : Schedule()
     }
 

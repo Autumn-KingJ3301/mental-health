@@ -2,6 +2,7 @@ package com.kaushal.mentalhealth.screens
 
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.scrollable
@@ -27,6 +28,7 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -44,6 +46,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.RadioButton
@@ -60,6 +63,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -70,11 +74,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.kaushal.mentalhealth.R
 import com.kaushal.mentalhealth.model.TaskManager
 import com.kaushal.mentalhealth.model.TaskModel
+import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.format.TextStyle
 import java.util.Calendar
@@ -101,7 +107,8 @@ fun HomeScreen() {
         "Focus mode" to colorResource(id = R.color.teal_200)
     )
     val tagOptions = setOf("Todo", "Periodic", "Focus mode")
-    val scheduleOptions = listOf("Once", "Daily", "Monthly", "Custom")
+    val scheduleOptions = listOf("Once", "Daily", "Custom")
+    val daysOfWeek = DayOfWeek.entries.toTypedArray()
 
     var selectedSchedule by remember { mutableStateOf(scheduleOptions[0]) }
     var selectedPriority by remember { mutableStateOf(priorityOptions[1]) }
@@ -113,6 +120,7 @@ fun HomeScreen() {
         initialMinute = calendar.get(Calendar.MINUTE),
         is24Hour = false
     )
+    var selectedDaysOfWeek by remember { mutableStateOf(emptySet<DayOfWeek>()) }
 
     Column(
         modifier = Modifier
@@ -353,7 +361,16 @@ fun HomeScreen() {
                             )
                         }
                     }
+                    Spacer(modifier = Modifier.height(10.dp))
                     if (selectedSchedule == "Daily") {
+                        Text(
+                            text = "Set time",
+                            style = MaterialTheme.typography.titleSmall,
+                            color = colorResource(
+                                id = R.color.text
+                            )
+                        )
+                        Spacer(modifier = Modifier.height(10.dp))
                         TimeInput(
                             state = timePickerState,
                             colors = TimePickerDefaults.colors(
@@ -369,6 +386,103 @@ fun HomeScreen() {
                                 timeSelectorUnselectedContentColor = colorResource(id = R.color.text_accent)
                             ),
                         )
+
+                    }else if (selectedSchedule == "Custom"){
+                        Text(
+                            text = "Set time",
+                            style = MaterialTheme.typography.titleSmall,
+                            color = colorResource(
+                                id = R.color.text
+                            )
+                        )
+                        Spacer(modifier = Modifier.height(10.dp))
+                        TimeInput(
+                            state = timePickerState,
+                            colors = TimePickerDefaults.colors(
+                                containerColor = colorResource(id = R.color.input),
+                                periodSelectorBorderColor = colorResource(id = R.color.dark_accent_2),
+                                periodSelectorSelectedContainerColor = colorResource(id = R.color.dark_accent_2),
+                                periodSelectorSelectedContentColor = colorResource(id = R.color.text_accent),
+                                periodSelectorUnselectedContentColor = colorResource(id = R.color.dark_accent_2),
+                                selectorColor = colorResource(id = R.color.dark_accent_2),
+                                timeSelectorSelectedContainerColor = colorResource(id = R.color.input),
+                                timeSelectorSelectedContentColor = colorResource(id = R.color.text_accent),
+                                timeSelectorUnselectedContainerColor = colorResource(id = R.color.input),
+                                timeSelectorUnselectedContentColor = colorResource(id = R.color.text_accent)
+                            ),
+                        )
+                        Text(
+                            text = "Select days",
+                            style = MaterialTheme.typography.titleSmall,
+                            color = colorResource(
+                                id = R.color.text
+                            )
+                        )
+                        Spacer(modifier = Modifier.height(5.dp))
+                        FlowRow (
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ){
+                            daysOfWeek.forEach { day->
+                                FilterChip(
+                                    onClick = {
+                                        val newSelection = selectedDaysOfWeek.toMutableSet()
+                                        if(day in selectedDaysOfWeek){
+                                            newSelection.remove(day)
+                                        }else{
+                                            newSelection.add(day)
+                                        }
+                                        selectedDaysOfWeek = newSelection
+                                    },
+                                    label = {
+                                        Text(
+                                            day.name.take(2), color = colorResource(id = R.color.text)
+                                        )
+                                    },
+                                    colors = FilterChipDefaults.filterChipColors(
+                                        containerColor = Color.Transparent,
+                                        selectedContainerColor = colorResource(id = R.color.input)
+                                    ),
+                                    border = FilterChipDefaults.filterChipBorder(
+                                        borderColor = colorResource(id = R.color.dark_accent_2),
+                                        selected = day in selectedDaysOfWeek,
+                                        enabled = true
+                                    ),
+                                    selected = day in selectedDaysOfWeek,
+                                    leadingIcon = if (day in selectedDaysOfWeek) {
+                                        {
+                                            Icon(
+                                                painter = painterResource(id = R.drawable.radiobuttonchecked),
+                                                contentDescription = "Done icon",
+                                                modifier = Modifier.size(FilterChipDefaults.IconSize),
+                                                tint = colorResource(id = R.color.text_accent)
+                                            )
+                                        }
+                                    } else {
+                                        {
+                                            Icon(
+                                                painter = painterResource(id = R.drawable.radiobuttonunchecked),
+                                                contentDescription = "Done icon",
+                                                modifier = Modifier.size(FilterChipDefaults.IconSize),
+                                                tint = colorResource(id = R.color.text_accent)
+                                            )
+                                        }
+                                    },
+                                )
+                            }
+                        }
+
+                    }
+
+                    Spacer(modifier = Modifier.height(15.dp))
+                    OutlinedButton(
+                        onClick = { /*TODO*/ }, border = BorderStroke(
+                            width = 1.dp, color = colorResource(
+                                id = R.color.dark_accent_2
+                            )
+                        ), shape = RoundedCornerShape(10.dp)
+                    ) {
+                        Text(text = "Add new task", color = colorResource(id = R.color.text_accent))
 
                     }
                 }
@@ -404,10 +518,10 @@ fun Header() {
                     )
                 )
                 Text(
-                    text = "Ascendant 3",
+                    text = "Immortal 3",
                     style = MaterialTheme.typography.labelLarge,
                     color = colorResource(
-                        id = R.color.rank_asc
+                        id = R.color.hard_label
                     )
                 )
             }
